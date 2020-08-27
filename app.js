@@ -46,12 +46,12 @@ app.use((req, res, next) => {
 
 app.use(auth);
 
-app.put('post-image', (req, res, next) => {
+app.put('/post-image', (req, res, next) => {
     if (!req.isAuth) {
         throw new Error('Not authenticated!');
     }
     if (!req.file) {
-        return res.ststus(200).json({ message: 'No file provided!' });
+        return res.status(200).json({ message: 'No file provided!' });
     }
     if (req.body.oldPath) {
         clearImage(req.body.oldPath);

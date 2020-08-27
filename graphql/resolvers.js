@@ -9,9 +9,12 @@ module.exports = {
     createUser: async function ({ userInput }, req) {
         const errors = [];
         if (!validator.isEmail(userInput.email)) {
-            errors.push({ message: 'E-Mail is invalid!' });
+            errors.push({ message: 'E-Mail is invalid.' });
         }
-        if (validator.isEmpty(userInput.password) || !validator.isLength(userInput.password, { min: 5 })) {
+        if (
+            validator.isEmpty(userInput.password) ||
+            !validator.isLength(userInput.password, { min: 5 })
+        ) {
             errors.push({ message: 'Password too short!' });
         }
         if (errors.length > 0) {
@@ -20,7 +23,6 @@ module.exports = {
             error.code = 422;
             throw error;
         }
-
         const existingUser = await User.findOne({ email: userInput.email });
         if (existingUser) {
             const error = new Error('User exists already!');
@@ -64,10 +66,16 @@ module.exports = {
             throw error;
         }
         const errors = [];
-        if (validator.isEmpty(postInput.title) || !validator.isLength(postInput.title, { min: 5 })) {
+        if (
+            validator.isEmpty(postInput.title) ||
+            !validator.isLength(postInput.title, { min: 5 })
+        ) {
             errors.push({ message: 'Title is invalid.' });
         }
-        if (validator.isEmpty(postInput.content) || !validator.isLength(postInput.content, { min: 5 })) {
+        if (
+            validator.isEmpty(postInput.content) ||
+            !validator.isLength(postInput.content, { min: 5 })
+        ) {
             errors.push({ message: 'Content is invalid.' });
         }
         if (errors.length > 0) {
@@ -82,7 +90,7 @@ module.exports = {
             error.code = 401;
             throw error;
         }
-        const post = await new Post({
+        const post = new Post({
             title: postInput.title,
             content: postInput.content,
             imageUrl: postInput.imageUrl,
@@ -114,7 +122,6 @@ module.exports = {
             .skip((page - 1) * perPage)
             .limit(perPage)
             .populate('creator');
-
         return {
             posts: posts.map(p => {
                 return {
@@ -124,7 +131,26 @@ module.exports = {
                     updatedAt: p.updatedAt.toISOString()
                 };
             }),
-            totalPosts
+            totalPosts: totalPosts
+        };
+    },
+    post: async function ({ id }, req) {
+        if (!req.isAuth) {
+            const error = new Error('Not authenticated!');
+            error.code = 401;
+            throw error;
+        }
+        const post = await Post.findById(id).populate('creator');
+        if (!post) {
+            const error = new Error('No post found!');
+            error.code = 404;
+            throw error;
+        }
+        return {
+            ...post._doc,
+            _id: post._id.toString(),
+            createdAt: post.createdAt.toISOString(),
+            updatedAt: post.updatedAt.toISOString()
         };
     }
 };
