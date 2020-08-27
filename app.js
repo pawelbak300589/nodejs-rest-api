@@ -1,5 +1,6 @@
 require('dotenv').config();
 const path = require('path');
+
 const express = require('express');
 const mongoose = require('mongoose');
 const uuid = require('uuid');
@@ -23,7 +24,11 @@ const fileStorage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+    if (
+        file.mimetype === 'image/png' ||
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'image/jpeg'
+    ) {
         cb(null, true);
     } else {
         cb(null, false);
@@ -59,26 +64,28 @@ app.put('/post-image', (req, res, next) => {
     if (req.body.oldPath) {
         clearImage(req.body.oldPath);
     }
-    return res.status(201).json({
-        message: 'File stored.',
-        filePath: req.file.path
-    });
+    return res
+        .status(201)
+        .json({ message: 'File stored.', filePath: req.file.path });
 });
 
-app.use('/graphql', graphqlHTTP({
-    schema: graphqlSchema,
-    rootValue: graphqlResolver,
-    graphiql: true,
-    formatError(err) {
-        if (!err.originalError) {
-            return err;
+app.use(
+    '/graphql',
+    graphqlHTTP({
+        schema: graphqlSchema,
+        rootValue: graphqlResolver,
+        graphiql: true,
+        formatError(err) {
+            if (!err.originalError) {
+                return err;
+            }
+            const data = err.originalError.data;
+            const message = err.message || 'An error occurred.';
+            const code = err.originalError.code || 500;
+            return { message: message, status: code, data: data };
         }
-        const data = err.originalError.data;
-        const message = err.message || 'An error occured.';
-        const code = err.originalError.code || 500;
-        return { message, status: code, data };
-    }
-}));
+    })
+);
 
 app.use((error, req, res, next) => {
     console.log(error);

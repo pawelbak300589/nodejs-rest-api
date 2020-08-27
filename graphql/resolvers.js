@@ -51,14 +51,15 @@ module.exports = {
             error.code = 401;
             throw error;
         }
-        const token = jwt.sign({
-            userId: user._id.toString(),
-            email: user.email
-        }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        return {
-            token,
-            userId: user._id.toString()
-        };
+        const token = jwt.sign(
+            {
+                userId: user._id.toString(),
+                email: user.email
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        return { token: token, userId: user._id.toString() };
     },
     createPost: async function ({ postInput }, req) {
         if (!req.isAuth) {
@@ -167,7 +168,7 @@ module.exports = {
             throw error;
         }
         if (post.creator._id.toString() !== req.userId.toString()) {
-            const error = new Error('Not authorised!');
+            const error = new Error('Not authorized!');
             error.code = 403;
             throw error;
         }
@@ -216,7 +217,7 @@ module.exports = {
             throw error;
         }
         if (post.creator.toString() !== req.userId.toString()) {
-            const error = new Error('Not authorised!');
+            const error = new Error('Not authorized!');
             error.code = 403;
             throw error;
         }
@@ -235,14 +236,11 @@ module.exports = {
         }
         const user = await User.findById(req.userId);
         if (!user) {
-            const error = new Error('No user found.');
-            error.code = 401;
+            const error = new Error('No user found!');
+            error.code = 404;
             throw error;
         }
-        return {
-            ...user._doc,
-            _id: user._id.toString()
-        };
+        return { ...user._doc, _id: user._id.toString() };
     },
     updateStatus: async function ({ status }, req) {
         if (!req.isAuth) {
@@ -252,15 +250,12 @@ module.exports = {
         }
         const user = await User.findById(req.userId);
         if (!user) {
-            const error = new Error('No user found.');
-            error.code = 401;
+            const error = new Error('No user found!');
+            error.code = 404;
             throw error;
         }
         user.status = status;
         await user.save();
-        return {
-            ...user._doc,
-            _id: user._id.toString()
-        };
+        return { ...user._doc, _id: user._id.toString() };
     }
 };
