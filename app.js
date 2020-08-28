@@ -7,6 +7,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const uuid = require('uuid');
 const multer = require('multer');
+const helmet = require('helmet');
 const { graphqlHTTP } = require('express-graphql');
 
 const graphqlSchema = require('./graphql/schema');
@@ -37,6 +38,7 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+app.use(helmet());
 app.use(express.json());
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'));
 app.use('/images', express.static(path.join(__dirname, 'images')));
